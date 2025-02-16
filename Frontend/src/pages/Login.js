@@ -1,9 +1,16 @@
 
 import React from 'react';
 import { Box, Button, Typography, Container } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import GoogleIcon from '@mui/icons-material/Google';
 
 function Login() {
+  const navigate = useNavigate();
+
+  const handleGoogleLogin = () => {
+    navigate('/pdf');
+  };
+
   return (
     <Container maxWidth="xl" className="login-container">
       <Box className="login-content">
@@ -22,6 +29,7 @@ function Login() {
               variant="contained"
               startIcon={<GoogleIcon />}
               className="google-button"
+              onClick={handleGoogleLogin}
             >
               Continue with google
             </Button>
