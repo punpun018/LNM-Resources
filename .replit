@@ -1,3 +1,18 @@
 modules = ["nodejs-20"]
 [nix]
 channel = "stable-24_05"
+
+[workflows]
+runButton = "Start Backend"
+
+[[workflows.workflow]]
+name = "Start Backend"
+author = 39714650
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd Backend && node index.js"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
