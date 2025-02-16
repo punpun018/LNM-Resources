@@ -3,7 +3,7 @@ modules = ["nodejs-20"]
 channel = "stable-24_05"
 
 [workflows]
-runButton = "Start Backend"
+runButton = "Start Frontend"
 
 [[workflows.workflow]]
 name = "Start Backend"
@@ -12,6 +12,14 @@ author = 39714650
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd Backend && node index.js"
+
+[[workflows.workflow]]
+name = "Start Frontend"
+author = 28991126
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd Frontend && npm start"
 
 [[ports]]
 localPort = 3000
