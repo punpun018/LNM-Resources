@@ -1,0 +1,68 @@
+
+.pdf-container {
+  padding: 24px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #c5f1c5 0%, #b7ecd9 100%);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.profile-avatar {
+  cursor: pointer;
+  width: 48px;
+  height: 48px;
+}
+
+.filters-section {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  min-width: 200px;
+  background-color: white;
+}
+
+.results-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.pdf-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pdf-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pdf-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.contribute-button {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 32px;
+  background-color: #4CAF50 !important;
+}
