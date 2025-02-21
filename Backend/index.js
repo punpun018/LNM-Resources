@@ -1,13 +1,28 @@
+
 const express = require('express');
 const cors = require('cors');
-const { initializeApp } = require('firebase-admin/app');
-const { getAuth, getFirestore, collection, getDocs } = require('firebase-admin/auth');
-const { getFirestore, collection, addDoc, query, where, getDocs } = require('firebase-admin/firestore');
-
+const admin = require('firebase-admin');
 
 const app = express();
 const PORT = 3001;
 const HOST = "0.0.0.0";
+
+// Initialize Firebase Admin with service account
+const serviceAccount = {
+  type: "service_account",
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  client_id: process.env.FIREBASE_CLIENT_ID,
+  auth_uri: "https://accounts.google.com/o/oauth2/auth",
+  token_uri: "https://oauth2.googleapis.com/token",
+  auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+  client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL
+};
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
 app.use(cors({
   origin: true,
@@ -15,80 +30,72 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Initialize Firebase Admin
-const admin = initializeApp({
-  credential: require('firebase-admin').credential.cert({
-    projectId: "lnmresources2403",
-    privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL
-  })
-});
-
-const db = getFirestore();
-const auth = getAuth();
-
-
 // Authentication middleware
 const authenticateUser = async (req, res, next) => {
   try {
     const token = req.headers.authorization?.split('Bearer ')[1];
     if (!token) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'No token provided' });
     }
-    const decodedToken = await auth.verifyIdToken(token);
-    if (!decodedToken.email.endsWith('@lnmiit.ac.in')) {
+    
+    const decodedToken = await admin.auth().verifyIdToken(token);
+    if (!decodedToken.email?.endsWith('@lnmiit.ac.in')) {
       return res.status(403).json({ error: 'Only LNMIIT emails are allowed' });
     }
+    
     req.user = decodedToken;
     next();
   } catch (error) {
+    console.error('Auth error:', error);
     res.status(401).json({ error: 'Invalid token' });
   }
 };
 
-// Routes
+// Auth route
 app.post('/api/auth/google', async (req, res) => {
   try {
     const { idToken } = req.body;
-    const decodedToken = await auth.verifyIdToken(idToken);
+    if (!idToken) {
+      return res.status(400).json({ error: 'No token provided' });
+    }
 
-    if (!decodedToken.email.endsWith('@lnmiit.ac.in')) {
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    if (!decodedToken.email?.endsWith('@lnmiit.ac.in')) {
       return res.status(403).json({ error: 'Only LNMIIT emails are allowed' });
     }
 
-    // Check if user exists (This part was missing from the edited code but is crucial)
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('email', '==', decodedToken.email));
-    const querySnapshot = await getDocs(q);
+    // Check/create user in Firestore
+    const db = admin.firestore();
+    const userRef = db.collection('users').doc(decodedToken.uid);
+    await userRef.set({
+      name: decodedToken.name,
+      email: decodedToken.email,
+      profile_image: decodedToken.picture,
+      updated_at: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
 
-    if (querySnapshot.empty) {
-      // Create new user
-      await addDoc(usersRef, {
-        name: decodedToken.name,
-        email: decodedToken.email,
-        profile_image: decodedToken.picture,
-        created_at: new Date().toISOString()
-      });
-    }
+    // Create custom token for frontend
+    const customToken = await admin.auth().createCustomToken(decodedToken.uid);
+    res.json({ token: customToken });
 
-    res.json({ token: idToken });
   } catch (error) {
     console.error('Auth error:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Protected routes
+// Protected route example
 app.get('/api/files', authenticateUser, async (req, res) => {
   try {
-    const filesRef = collection(db, 'files');
-    const querySnapshot = await getDocs(filesRef);
+    const db = admin.firestore();
+    const filesSnapshot = await db.collection('files').get();
     const files = [];
-    querySnapshot.forEach((doc) => {
+    filesSnapshot.forEach(doc => {
       files.push({ id: doc.id, ...doc.data() });
     });
     res.json(files);
   } catch (error) {
+    console.error('Files error:', error);
     res.status(500).json({ error: error.message });
   }
 });
