@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Box, Button, Typography, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -5,15 +6,40 @@ import GoogleIcon from '@mui/icons-material/Google';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { db } from '../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const navigate = useNavigate();
   const auth = getAuth();
 
   const handleGoogleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-
+  const auth = getAuth();
+  const provider = new GoogleAuthProvider();
+  
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    
+    // Check if user exists in Firestore
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
+    
+    if (!userSnap.exists()) {
+      // Create new user in Firestore
+      await setDoc(userRef, {
+        name: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        createdAt: new Date().toISOString(),
+      });
+    }
+    
+    navigate('/pdf');
+  } catch (error) {
+    console.error('Login failed:', error);
+  }
     try {
+      const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
@@ -23,20 +49,12 @@ function Login() {
         return;
       }
 
-      // Check if user exists in Firestore
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
+      const idToken = await user.getIdToken();
+      const response = await axios.post('http://0.0.0.0:3001/api/auth/google', {
+        idToken
+      });
 
-      if (!userSnap.exists()) {
-        // Create new user in Firestore
-        await setDoc(userRef, {
-          name: user.displayName,
-          email: user.email,
-          photoURL: user.photoURL,
-          createdAt: new Date().toISOString(),
-        });
-      }
-
+      localStorage.setItem('token', response.data.token);
       navigate('/pdf');
     } catch (error) {
       console.error('Login error:', error);
@@ -49,26 +67,36 @@ function Login() {
   };
 
   return (
-    <Container maxWidth="sm" className="login-container">
-      <Box className="login-box">
-        <Typography variant="h3" className="title">
-          LNM Resources
-        </Typography>
-        <Button
-          variant="contained"
-          onClick={handleGoogleLogin}
-          className="google-button"
-          startIcon={<GoogleIcon />}
-        >
-          Sign in with Google
-        </Button>
-        <Button
-          variant="outlined"
-          onClick={handleGuestLogin}
-          className="guest-button"
-        >
-          Continue as Guest
-        </Button>
+    <Container maxWidth="xl" className="login-container">
+      <Box className="login-content">
+        <Box className="login-left">
+          <img src="/attached_assets/computer-illustration.png" alt="Computer" className="login-illustration" />
+        </Box>
+        <Box className="login-right">
+          <Typography variant="h2" className="title">
+            LNM Resources
+          </Typography>
+          <Typography variant="h4" className="subtitle">
+            Simplify Your Exam Prep with LNMIIT Resources
+          </Typography>
+          <Box className="login-buttons">
+            <Button
+              variant="contained"
+              startIcon={<GoogleIcon />}
+              className="google-button"
+              onClick={handleGoogleLogin}
+            >
+              Continue with Google
+            </Button>
+            <Button
+              variant="contained"
+              className="guest-button"
+              onClick={handleGuestLogin}
+            >
+              Guest Login
+            </Button>
+          </Box>
+        </Box>
       </Box>
     </Container>
   );
