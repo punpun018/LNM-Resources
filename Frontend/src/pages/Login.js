@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import GoogleIcon from '@mui/icons-material/Google';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import axios from 'axios';
-
+import '../firebase';
 
 function Login() {
   const navigate = useNavigate();
@@ -40,7 +40,7 @@ function Login() {
     <Container maxWidth="xl" className="login-container">
       <Box className="login-content">
         <Box className="login-left">
-          <img src="attached_assets/computer-illustration.png" alt="Computer" className="login-illustration" />
+          <img src="/attached_assets/computer-illustration.png" alt="Computer" className="login-illustration" />
         </Box>
         <Box className="login-right">
           <Typography variant="h2" className="title">
