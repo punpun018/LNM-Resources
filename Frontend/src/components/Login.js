@@ -1,10 +1,12 @@
+
 import React from "react";
-import { getAuth, signInWithPopup } from "firebase/auth";
-import { googleProvider } from "./firebase";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "../firebase/firebase";
 
 const Login = () => {
+  const googleProvider = new GoogleAuthProvider();
+
   const handleGoogleLogin = async () => {
-    const auth = getAuth();
     try {
       const result = await signInWithPopup(auth, googleProvider);
       console.log("User Info:", result.user);
