@@ -1,13 +1,14 @@
 
-import React from 'react';
-import { Box, Button, Typography, Container } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "../firebase/firebase";
 import GoogleIcon from '@mui/icons-material/Google';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import axios from 'axios';
 import '../firebase';
 
 function Login() {
+  const googleProvider = new GoogleAuthProvider();
   const navigate = useNavigate();
   const auth = getAuth();
 
