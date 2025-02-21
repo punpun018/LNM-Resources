@@ -36,6 +36,10 @@ function Login() {
     }
   };
 
+  const handleGuestLogin = () => {
+    navigate('/pdf');
+  };
+
   return (
     <Container maxWidth="xl" className="login-container">
       <Box className="login-content">
@@ -57,6 +61,13 @@ function Login() {
               onClick={handleGoogleLogin}
             >
               Continue with Google
+            </Button>
+            <Button
+              variant="contained"
+              className="guest-button"
+              onClick={handleGuestLogin}
+            >
+              Guest Login
             </Button>
           </Box>
         </Box>
