@@ -28,39 +28,7 @@ function ContributePage() {
   const materialTypes = ['Quiz', 'Midterm', 'Endterm', 'Notes'];
   const years = ['2025','2024', '2023', '2022', '2021', '2020', '2019'];
 
-  import { storage, db, auth } from '../firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc } from 'firebase/firestore';
-
-const handleFileUpload = async (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  try {
-    // Upload file to Firebase Storage
-    const storageRef = ref(storage, `files/${auth.currentUser.uid}/${file.name}`);
-    await uploadBytes(storageRef, file);
-    const downloadURL = await getDownloadURL(storageRef);
-
-    // Save file metadata to Firestore
-    await addDoc(collection(db, 'files'), {
-      title: title,
-      semester: semester,
-      course: course,
-      materialType: materialType,
-      year: year,
-      fileURL: downloadURL,
-      uploadedBy: auth.currentUser.uid,
-      uploadedAt: new Date().toISOString(),
-      likes: 0
-    });
-
-    alert('File uploaded successfully!');
-    navigate('/pdf');
-  } catch (error) {
-    console.error('Upload failed:', error);
-    alert('Upload failed. Please try again.');
-  }
+  const handleFileUpload = (event) => {
     setFile(event.target.files[0]);
   };
 
