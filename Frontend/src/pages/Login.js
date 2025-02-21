@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { Box, Button, Typography, Container } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import GoogleIcon from '@mui/icons-material/Google';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { db } from '../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const navigate = useNavigate();
@@ -23,12 +24,10 @@ function Login() {
         return;
       }
 
-      // Check if user exists in Firestore
       const userRef = doc(db, 'users', user.uid);
       const userSnap = await getDoc(userRef);
 
       if (!userSnap.exists()) {
-        // Create new user in Firestore
         await setDoc(userRef, {
           name: user.displayName,
           email: user.email,
