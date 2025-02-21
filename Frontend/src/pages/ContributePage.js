@@ -1,21 +1,21 @@
+
 import React, { useState } from 'react';
-import { Container, Box, Typography, Button, TextField, Select, MenuItem } from '@mui/material';
+import { Container, Box, Select, MenuItem, Button, Typography, Modal } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { storage, db, auth } from '../firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc } from 'firebase/firestore';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import '../styles/ContributePage.css';
 
 function ContributePage() {
-  const navigate = useNavigate();
-  const [file, setFile] = useState(null);
   const [semester, setSemester] = useState('');
   const [course, setCourse] = useState('');
   const [materialType, setMaterialType] = useState('');
   const [year, setYear] = useState('');
+  const [file, setFile] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const navigate = useNavigate();
 
   const coursesBySemester = {
-    1: ['CLP', 'M1', 'BE', 'BE Lab', 'CP', 'CP Lab', 'TCE', 'IKS'],
+    1: ['CLP', 'M1', 'BE', 'BE Lab', 'CP', 'CP Lab', 'TCE', 'IKS' ],
     2: ['M2', 'UG Lab', 'DSA', 'VEE', 'EEB', 'DMS', 'DSY', 'IMP', 'ANEL'],
     3: ['M3', 'EFE', 'PTS', 'COA', 'AP', 'IDBMS', 'OTA'],
     4: ['P&S', 'DAA', 'TOC', 'OS', 'CN'],
@@ -26,57 +26,82 @@ function ContributePage() {
   };
 
   const materialTypes = ['Quiz', 'Midterm', 'Endterm', 'Notes'];
-  const years = ['2025', '2024', '2023', '2022', '2021', '2020', '2019'];
+  const years = ['2025','2024', '2023', '2022', '2021', '2020', '2019'];
 
-  const handleFileChange = (event) => {
+  import { storage, db, auth } from '../firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, addDoc } from 'firebase/firestore';
+
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  try {
+    // Upload file to Firebase Storage
+    const storageRef = ref(storage, `files/${auth.currentUser.uid}/${file.name}`);
+    await uploadBytes(storageRef, file);
+    const downloadURL = await getDownloadURL(storageRef);
+
+    // Save file metadata to Firestore
+    await addDoc(collection(db, 'files'), {
+      title: title,
+      semester: semester,
+      course: course,
+      materialType: materialType,
+      year: year,
+      fileURL: downloadURL,
+      uploadedBy: auth.currentUser.uid,
+      uploadedAt: new Date().toISOString(),
+      likes: 0
+    });
+
+    alert('File uploaded successfully!');
+    navigate('/pdf');
+  } catch (error) {
+    console.error('Upload failed:', error);
+    alert('Upload failed. Please try again.');
+  }
     setFile(event.target.files[0]);
   };
 
-  const handleUpload = async () => {
-    if (!file || !semester || !course || !materialType || !year) {
-      alert('Please fill all fields');
-      return;
-    }
-
-    try {
-      const fileRef = ref(storage, `materials/${semester}/${course}/${materialType}/${file.name}`);
-      await uploadBytes(fileRef, file);
-      const downloadURL = await getDownloadURL(fileRef);
-
-      await addDoc(collection(db, 'materials'), {
-        semester,
-        course,
-        materialType,
-        year,
-        fileName: file.name,
-        fileURL: downloadURL,
-        uploadedBy: auth.currentUser?.uid,
-        uploadedAt: new Date().toISOString()
-      });
-
-      alert('Upload successful!');
-      navigate('/pdf');
-    } catch (error) {
-      console.error('Upload error:', error);
-      alert('Upload failed. Please try again.');
+  const handleSubmit = () => {
+    if (semester && course && materialType && year && file) {
+      // Add upload logic here
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigate('/pdf');
+      }, 2000);
     }
   };
 
   return (
-    <Container maxWidth="sm" className="contribute-container">
-      <Typography variant="h4" className="title">
-        Contribute Material
+    <Container maxWidth="xl" className="contribute-container">
+      <Box className="header">
+        <Button 
+          startIcon={<ArrowBackIcon />} 
+          onClick={() => navigate('/pdf')}
+          className="back-button"
+        >
+          Back
+        </Button>
+        <Typography variant="h2">LNM Resources</Typography>
+      </Box>
+
+      <Typography variant="h5" className="upload-title">
+        Upload resources you have to help others
       </Typography>
-      <Box className="form-container">
+
+      <Box className="upload-form">
         <Select
           value={semester}
           onChange={(e) => setSemester(e.target.value)}
           displayEmpty
-          fullWidth
-          className="form-field"
+          className="form-select"
+           sx={{ fontFamily: "Arial", fontWeight: "bold", fontSize: "18px" }} 
         >
-          <MenuItem value="">Select Semester</MenuItem>
-          {Object.keys(coursesBySemester).map((sem) => (
+          <MenuItem value=""> Sem</MenuItem>
+          {[1,2,3,4,5,6,7,8].map((sem) => (
             <MenuItem key={sem} value={sem}>Semester {sem}</MenuItem>
           ))}
         </Select>
@@ -85,11 +110,10 @@ function ContributePage() {
           value={course}
           onChange={(e) => setCourse(e.target.value)}
           displayEmpty
-          fullWidth
+          className="form-select"
           disabled={!semester}
-          className="form-field"
         >
-          <MenuItem value="">Select Course</MenuItem>
+          <MenuItem value="">Subject</MenuItem>
           {semester && coursesBySemester[semester].map((course) => (
             <MenuItem key={course} value={course}>{course}</MenuItem>
           ))}
@@ -99,10 +123,9 @@ function ContributePage() {
           value={materialType}
           onChange={(e) => setMaterialType(e.target.value)}
           displayEmpty
-          fullWidth
-          className="form-field"
+          className="form-select"
         >
-          <MenuItem value="">Select Material Type</MenuItem>
+          <MenuItem value="">Type</MenuItem>
           {materialTypes.map((type) => (
             <MenuItem key={type} value={type}>{type}</MenuItem>
           ))}
@@ -112,10 +135,9 @@ function ContributePage() {
           value={year}
           onChange={(e) => setYear(e.target.value)}
           displayEmpty
-          fullWidth
-          className="form-field"
+          className="form-select"
         >
-          <MenuItem value="">Select Year</MenuItem>
+          <MenuItem value="">Year</MenuItem>
           {years.map((year) => (
             <MenuItem key={year} value={year}>{year}</MenuItem>
           ))}
@@ -124,19 +146,44 @@ function ContributePage() {
         <input
           type="file"
           accept=".pdf"
-          onChange={handleFileChange}
-          className="file-input"
+          onChange={handleFileUpload}
+          style={{ display: 'none' }}
+          id="file-upload"
         />
+        <label htmlFor="file-upload">
+          <Button
+            variant="outlined"
+            component="span"
+            className="upload-button"
+            fullWidth
+          >
+            {file ? file.name : 'Upload'}
+          </Button>
+        </label>
+        <Typography variant="caption" className="file-limit">
+          (Max 10 MB per file)
+        </Typography>
 
         <Button
           variant="contained"
-          onClick={handleUpload}
-          disabled={!file || !semester || !course || !materialType || !year}
-          className="upload-button"
+          onClick={handleSubmit}
+          className="save-button"
+          disabled={!semester || !course || !materialType || !year || !file}
+           sx={{ fontFamily: "Arial", fontWeight: "bold", fontSize: "18px" }}
         >
-          Upload
+          Save
         </Button>
       </Box>
+
+      <Modal
+        open={showSuccess}
+        onClose={() => setShowSuccess(false)}
+        className="success-modal"
+      >
+        <Box className="success-content">
+          <Typography>File uploaded successfully!</Typography>
+        </Box>
+      </Modal>
     </Container>
   );
 }
