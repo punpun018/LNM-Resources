@@ -16,24 +16,27 @@ function Login() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      if (!user.email.endsWith('@lnmiit.ac.in')) {
+      console.log("Authentication successful:", user);
+
+  if (!user.email.endsWith('@lnmiit.ac.in')) {
         alert('Only LNMIIT emails are allowed');
         await auth.signOut();
         return;
       }
 
       const idToken = await user.getIdToken();
+      console.log("ID Token obtained:", idToken);
 
-      // Send the token to your backend
       const response = await axios.post('http://0.0.0.0:3001/api/auth/google', {
         idToken
       });
+      console.log("Backend response:", response.data);
 
       localStorage.setItem('token', response.data.token);
       navigate('/pdf');
     } catch (error) {
-      console.error('Login error:', error);
-      alert('Login failed. Please try again.');
+      console.error('Login error details:', error.code, error.message);
+      alert(`Login failed: ${error.message}`);
     }
   };
 
