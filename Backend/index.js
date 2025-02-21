@@ -9,7 +9,7 @@ const app = express();
 const PORT = 3001;
 const HOST = "0.0.0.0";
 
-// Replace these with your Firebase config values
+
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
   authDomain: process.env.FIREBASE_AUTH_DOMAIN,
