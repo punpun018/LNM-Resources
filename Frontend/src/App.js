@@ -24,13 +24,15 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  if (loading) return <div>Loading...</div>; // Prevents premature redirects
+  if (loading) {
+    return <div className="loading">Loading...</div>;
+  }
 
   return (
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/" element={user ? <Navigate to="/pdf" replace /> : <Login />} />
+          <Route path="/" element={!loading && user ? <Navigate to="/pdf" replace /> : <Login />} />
           <Route path="/login" element={<Navigate to="/" replace />} />
 
           {/* Protected Routes */}
