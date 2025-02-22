@@ -1,15 +1,14 @@
-
 import React from 'react';
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from "../firebase/firebase";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { Container, Box, Typography, Button } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
 import axios from 'axios';
+import { auth } from "../firebase/firebase";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
 
 function Login() {
   const navigate = useNavigate();
-
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
@@ -18,22 +17,41 @@ function Login() {
 
       console.log("Authentication successful:", user);
 
-  if (!user.email.endsWith('@lnmiit.ac.in')) {
-        alert('Only LNMIIT emails are allowed');
-        await auth.signOut();
-        return;
-      }
+      // Restrict login to LNMIIT emails
+      // if (!user.email.endsWith("@lnmiit.ac.in")) {
+      //   alert("Only LNMIIT emails are allowed");
+      //   await auth.signOut();
+      //   return;
+      // }
 
+      // Store user data in Firestore (if not already present)
+
+      const db = getFirestore();
+      
+      await setDoc(doc(db, "users", user.uid), {
+        name: user.displayName,
+        email: user.email,
+        profile_image: user.photoURL,
+        created_at: new Date().toISOString()
+      }, { merge: true });
+
+      console.log("User Info Saved in Firestore");
+
+      // Get ID Token for backend authentication
       const idToken = await user.getIdToken();
       console.log("ID Token obtained:", idToken);
 
+      // Send token to backend
       const response = await axios.post('https://port3001-${REPL_SLUG}.${REPL_OWNER}.repl.co/api/auth/google', {
         idToken
       });
+
       console.log("Backend response:", response.data);
 
-      localStorage.setItem('token', response.data.token);
-      navigate('/pdf');
+      // Save token and navigate
+      localStorage.setItem("token", response.data.token);
+      navigate("/pdf");
+
     } catch (error) {
       console.error('Login error details:', error.code, error.message);
       alert(`Login failed: ${error.message}`);

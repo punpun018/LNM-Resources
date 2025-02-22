@@ -3,6 +3,7 @@ import { Container, Box, Typography, Button, Avatar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import '../styles/ProfilePage.css';
+import { getAuth, signOut } from "firebase/auth";
 
 function ProfilePage() {
   const navigate = useNavigate();
@@ -11,8 +12,21 @@ function ProfilePage() {
     { id: 2, title: 'CTIOT Endterm Paper', year: 2021, likes: 25, liked: false }
   ]);
 
-  const handleLogout = () => {
-    navigate('/');
+  // const handleLogout = async () => {
+  //   await signOut(auth);
+  //   console.log("User logged out");
+  // };
+
+  const handleLogout = async () => {
+    const auth = getAuth();
+    try {
+      await signOut(auth);
+      localStorage.removeItem("token"); // Remove stored token
+      console.log("User logged out");
+      window.location.href = "/"; // Redirect to login page
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+    }
   };
 
   const handleDelete = (id) => {
