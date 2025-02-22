@@ -4,6 +4,7 @@ run = "node index.js"
 channel = "stable-24_05"
 
 [workflows]
+runButton = "Start Frontend"
 
 [[workflows.workflow]]
 name = "Start Backend"

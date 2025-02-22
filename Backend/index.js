@@ -1,31 +1,42 @@
 import express from 'express';
 import cors from 'cors';
-import admin from 'firebase-admin';
+import admin from 'firebase-admin'; 
+import 'dotenv/config';
 
-const express = require('express');
-const cors = require('cors');
-const admin = require('firebase-admin');
+// const express = require('express');
+// const cors = require('cors');
+// const admin = require('firebase-admin');
 
 const app = express();
 const PORT = 3001;
 const HOST = "0.0.0.0";
 
 // Initialize Firebase Admin with service account
-const serviceAccount = {
-  type: "service_account",
-  project_id: process.env.FIREBASE_PROJECT_ID,
-  private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  client_email: process.env.FIREBASE_CLIENT_EMAIL,
-  client_id: process.env.FIREBASE_CLIENT_ID,
-  auth_uri: "https://accounts.google.com/o/oauth2/auth",
-  token_uri: "https://oauth2.googleapis.com/token",
-  auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
-  client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL
-};
+// const serviceAccount = {
+//   type: "service_account",
+//   project_id: process.env.project_id,
+//   private_key: process.env.private_key?.replace(/\\n/g, '\n'),
+//   client_email: process.env.client_email,
+//   client_id: process.env.client_id,
+//   auth_uri: "https://accounts.google.com/o/oauth2/auth",
+//   token_uri: "https://oauth2.googleapis.com/token",
+//   auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+//   client_x509_cert_url: process.env.client_x509_cert_url
+// };
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+
+console.log("Service Account:", serviceAccount);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
+
+
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount)
+// });
 
 app.use(cors({
   origin: true,
@@ -103,6 +114,7 @@ app.get('/api/files', authenticateUser, async (req, res) => {
   }
 });
 
-app.listen(PORT, HOST, () => {
-  console.log(`Server running on http://${HOST}:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
+

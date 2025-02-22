@@ -27,22 +27,22 @@ function App() {
 }
 
 export default App;
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from './components/Login';
-import PDFPage from './pages/PDFPage';
-import ProfilePage from './pages/ProfilePage';
+// import React from 'react';
+// import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+// import Login from './components/Login';
+// import PDFPage from './pages/PDFPage';
+// import ProfilePage from './pages/ProfilePage';
 
-function App() {
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/pdf" element={<PDFPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-      </Routes>
-    </Router>
-  );
-}
+// function App() {
+//   return (
+//     <Router>
+//       <Routes>
+//         <Route path="/" element={<Login />} />
+//         <Route path="/pdf" element={<PDFPage />} />
+//         <Route path="/profile" element={<ProfilePage />} />
+//       </Routes>
+//     </Router>
+//   );
+// }
 
-export default App;
+// export default App;
