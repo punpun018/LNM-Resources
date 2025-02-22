@@ -42,7 +42,7 @@ function Login() {
       console.log("ID Token obtained:", idToken);
 
       // Send token to backend
-      const response = await axios.post('https://port3001-${REPL_SLUG}.${REPL_OWNER}.repl.co/api/auth/google', {
+      const response = await axios.post('http://0.0.0.0:3001/api/auth/google', {
         idToken
       });
 

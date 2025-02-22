@@ -39,8 +39,9 @@ admin.initializeApp({
 // });
 
 app.use(cors({
-  origin: true,
-  credentials: true
+  origin: '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 app.use(express.json());
 
